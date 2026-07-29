@@ -1,0 +1,21 @@
+{
+  "name": "snap-aesthetic-photobooth",
+  "version": "1.0.0",
+  "description": "Premium HD Web Photobooth with Cute Filters and HD Download",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server --port=3000 --no-browser",
+    "start": "live-server --port=3000 --no-browser"
+  },
+  "keywords": [
+    "photobooth",
+    "aesthetic",
+    "canvas-hd",
+    "camera-web"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

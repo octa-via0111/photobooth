@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aesthetic Web Photobooth HD</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Decorative Blurs -->
+  <div class="bg-blur bg-blur-1"></div>
+  <div class="bg-blur bg-blur-2"></div>
+
+  <div class="app-container">
+
+
+    <!-- Main Workspace Grid -->
+    <main class="workspace">
+      
+      <!-- Left: Camera Preview Viewport -->
+        <div class="viewport-card">
+          <div style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1rem; width: 100%;">
+            <span class="status-badge" id="camera-status">
+              <span class="status-dot"></span>
+              Menghubungkan Kamera...
+            </span>
+          </div>
+          <!-- Live Video Viewport Container -->
+          <div class="video-container" id="video-viewport">
+            <video id="video-feed" autoplay playsinline muted></video>
+            
+            <!-- Live filter preview overlay -->
+            <div class="filter-overlay" id="filter-overlay"></div>
+            
+
+
+            <!-- Sticker overlays for preview (live camera decorations) -->
+            <div class="preview-stickers-container" id="live-stickers-container"></div>
+            
+            <!-- Countdown Overlay -->
+            <div class="countdown-overlay" id="countdown-overlay">
+              <span id="countdown-number">3</span>
+            </div>
+
+            <!-- Camera Flash Screen Flash -->
+            <div class="flash-overlay" id="flash-overlay"></div>
+
+            <!-- Sequential Capture Progress Indicator -->
+            <div class="capture-progress" id="capture-progress-bar">
+              <div class="progress-step" data-step="1"></div>
+              <div class="progress-step" data-step="2"></div>
+              <div class="progress-step" data-step="3"></div>
+              <div class="progress-step" data-step="4"></div>
+            </div>
+          </div>
+
+          <!-- Camera Controller Bar -->
+          <div class="camera-controls">
+            <button class="btn btn-secondary" id="btn-switch-camera" title="Ganti Kamera">
+              <i data-lucide="refresh-cw"></i>
+              <span>Kamera</span>
+            </button>
+            
+            <button class="btn btn-primary btn-capture" id="btn-capture">
+              <div class="capture-btn-inner"></div>
+              <i data-lucide="aperture" class="capture-icon"></i>
+            </button>
+
+            <div style="width: 86px;"></div> <!-- Spacer matching the camera switch button width for alignment -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Side Configuration Panel -->
+      <section class="control-panel">
+        <div class="control-card">
+          <!-- Control Panel Tabs -->
+          <div class="panel-tabs">
+            <button class="tab-btn active" data-tab="layout-tab">
+              <i data-lucide="layout"></i> Layout
+            </button>
+            <button class="tab-btn" data-tab="filter-tab">
+              <i data-lucide="sparkles"></i> Filter
+            </button>
+            <button class="tab-btn" data-tab="frame-tab">
+              <i data-lucide="palette"></i> Frame
+            </button>
+            <button class="tab-btn" data-tab="sticker-tab">
+              <i data-lucide="smile"></i> Stiker
+            </button>
+          </div>
+
+          <!-- Tab Content Sections -->
+          <div class="panel-content">
+            
+            <!-- 1. Layout Tab -->
+            <div class="tab-pane active" id="layout-tab">
+              <h3>Pilih Layout Foto</h3>
+              <div class="selection-grid layout-selection">
+                <div class="option-card active" data-layout="strip-4">
+                  <div class="layout-preview strip-4-preview">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>4-Cut Strip</h4>
+                    <p>4 foto vertikal estetis</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="strip-3">
+                  <div class="layout-preview strip-3-preview">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>3-Cut Film Strip</h4>
+                    <p>3 foto film vertikal klasik</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="grid-2x2">
+                  <div class="layout-preview grid-2x2-preview">
+                    <div><span></span><span></span></div>
+                    <div><span></span><span></span></div>
+                  </div>
+                  <div class="option-details">
+                    <h4>4-Cut Grid (2x2)</h4>
+                    <p>4 foto kotak kolase</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="polaroid-single">
+                  <div class="layout-preview polaroid-preview">
+                    <span></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>Retro Polaroid</h4>
+                    <p>Satu foto polaroid klasik</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="landscape-single">
+                  <div class="layout-preview landscape-preview">
+                    <span></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>Wide Single</h4>
+                    <p>Satu foto landscape HD</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Filter Tab -->
+            <div class="tab-pane" id="filter-tab">
+              <h3>Pilih Filter Lucu & Aesthetic</h3>
+              <div class="selection-grid filter-selection">
+                
+                <div class="option-card active" data-filter="normal">
+                  <div class="filter-demo filter-normal"></div>
+                  <div class="option-details">
+                    <h4>Original</h4>
+                    <p>Tanpa filter tambahan</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="vintage-warm">
+                  <div class="filter-demo filter-vintage-warm"></div>
+                  <div class="option-details">
+                    <h4>Retro Grain</h4>
+                    <p>Hangat, vintage, nostalgia</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="fresh-blush">
+                  <div class="filter-demo filter-fresh-blush"></div>
+                  <div class="option-details">
+                    <h4>Fresh Blush</h4>
+                    <p>Rona cerah, merona kemerahan</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="cyber-neon">
+                  <div class="filter-demo filter-cyber-neon"></div>
+                  <div class="option-details">
+                    <h4>Cyberpunk Neon</h4>
+                    <p>Nuansa futuristik neon biru-pink</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="mono-classic">
+                  <div class="filter-demo filter-mono-classic"></div>
+                  <div class="option-details">
+                    <h4>Classic B&W</h4>
+                    <p>Hitam & putih dramatis</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="dreamy-pastel">
+                  <div class="filter-demo filter-dreamy-pastel"></div>
+                  <div class="option-details">
+                    <h4>Soft Dreamy</h4>
+                    <p>Lembut, pastel, berkabut indah</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="tokyo-film">
+                  <div class="filter-demo filter-tokyo-film"></div>
+                  <div class="option-details">
+                    <h4>Tokyo Film</h4>
+                    <p>Cool tones, retro fuji film look</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="chroma-90s">
+                  <div class="filter-demo filter-chroma-90s"></div>
+                  <div class="option-details">
+                    <h4>Chroma 90s</h4>
+                    <p>Saturasi tinggi, retro hangat 90an</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="lomo-purple">
+                  <div class="filter-demo filter-lomo-purple"></div>
+                  <div class="option-details">
+                    <h4>Lomo Purple</h4>
+                    <p>Tone pink keunguan lomo mistis</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="sunset-glow">
+                  <div class="filter-demo filter-sunset-glow"></div>
+                  <div class="option-details">
+                    <h4>Sunset Glow</h4>
+                    <p>Efek keemasan golden hour hangat</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="neo-noir">
+                  <div class="filter-demo filter-neo-noir"></div>
+                  <div class="option-details">
+                    <h4>Neo Noir</h4>
+                    <p>Monokrom kontras tinggi & dramatis</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-filter="vibrant-peach">
+                  <div class="filter-demo filter-vibrant-peach"></div>
+                  <div class="option-details">
+                    <h4>Vibrant Peach</h4>
+                    <p>Rona peach hangat yang viral</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 3. Frame Tab -->
+            <div class="tab-pane" id="frame-tab">
+              <h3>Pilih Warna & Desain Frame</h3>
+              
+              <!-- Color Presets -->
+              <div class="color-picker-section">
+                <h4>Warna Dasar Frame</h4>
+                <div class="color-options">
+                  <button class="color-btn active" style="background: #ffffff;" data-color="#ffffff" title="Classic White"></button>
+                  <button class="color-btn" style="background: #111111;" data-color="#111111" title="Deep Black"></button>
+                  <button class="color-btn" style="background: #ffd3e8;" data-color="#ffd3e8" title="Soft Pink"></button>
+                  <button class="color-btn" style="background: #d4f0fc;" data-color="#d4f0fc" title="Baby Blue"></button>
+                  <button class="color-btn" style="background: #e8ffd3;" data-color="#e8ffd3" title="Mint Green"></button>
+                  <button class="color-btn" style="background: #fff5cc;" data-color="#fff5cc" title="Lemon Yellow"></button>
+                  <button class="color-btn" style="background: #e8dbff;" data-color="#e8dbff" title="Lavender"></button>
+                  <button class="color-btn" style="background: linear-gradient(135deg, #ff007f, #7f00ff);" data-color="gradient-neon" title="Neon Gradient"></button>
+                </div>
+              </div>
+
+              <!-- Pattern/Design Presets -->
+              <div class="pattern-picker-section">
+                <h4>Desain Frame Tema</h4>
+                <div class="selection-grid pattern-selection">
+                  <div class="option-card active" data-pattern="clean">
+                    <div class="pattern-preview pattern-clean"></div>
+                    <div class="option-details">
+                      <h4>Clean Minimalist</h4>
+                      <p>Sederhana dan elegan</p>
+                    </div>
+                  </div>
+                  <div class="option-card" data-pattern="film-strip">
+                    <div class="pattern-preview pattern-filmstrip"></div>
+                    <div class="option-details">
+                      <h4>Classic Film Strip</h4>
+                      <p>Gerigi roll film & kode retro</p>
+                    </div>
+                  </div>
+                  <div class="option-card" data-pattern="cute-heart">
+                    <div class="pattern-preview pattern-hearts"></div>
+                    <div class="option-details">
+                      <h4>Lovely Hearts</h4>
+                      <p>Hiasan hati cinta merah muda</p>
+                    </div>
+                  </div>
+                  <div class="option-card" data-pattern="retro-stars">
+                    <div class="pattern-preview pattern-stars"></div>
+                    <div class="option-details">
+                      <h4>Retro Stars</h4>
+                      <p>Bintang-bintang retro 90-an</p>
+                    </div>
+                  </div>
+                  <div class="option-card" data-pattern="cyber-grid">
+                    <div class="pattern-preview pattern-cyber"></div>
+                    <div class="option-details">
+                      <h4>Cyber Tech</h4>
+                      <p>Grid futuristik dengan neon line</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="newspaper">
+                    <div class="pattern-preview pattern-newspaper"></div>
+                    <div class="option-details">
+                      <h4>Retro Newspaper</h4>
+                      <p>Layout koran klasik & berita viral</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="y2k-stickers">
+                    <div class="pattern-preview pattern-y2k"></div>
+                    <div class="option-details">
+                      <h4>Y2K Pop Star</h4>
+                      <p>Gradasi neon pink-biru ala pop star 2000an</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Text/Date Customization -->
+              <div class="frame-text-section">
+                <h4>Teks Kustom Frame (Opsional)</h4>
+                <input type="text" id="frame-custom-text" placeholder="Tulis kenanganmu disini..." maxlength="25">
+                
+                <div class="checkbox-wrapper">
+                  <label class="custom-checkbox">
+                    <input type="checkbox" id="show-date-checkbox" checked>
+                    <span class="checkmark"></span>
+                    Tampilkan Tanggal Hari Ini
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Sticker Tab -->
+            <div class="tab-pane" id="sticker-tab">
+              <h3>Tambahkan Stiker Lucu</h3>
+              <p class="tab-desc">Klik stiker untuk menambahkannya ke kamera live preview. Kamu bisa geser, ubah ukuran, atau hapus stikermu di layar preview!</p>
+              
+              <div class="stickers-grid">
+                <button class="sticker-btn-item" data-sticker="❤️">❤️</button>
+                <button class="sticker-btn-item" data-sticker="✨">✨</button>
+                <button class="sticker-btn-item" data-sticker="🌸">🌸</button>
+                <button class="sticker-btn-item" data-sticker="⭐">⭐</button>
+                <button class="sticker-btn-item" data-sticker="🎀">🎀</button>
+                <button class="sticker-btn-item" data-sticker="🐱">🐱</button>
+                <button class="sticker-btn-item" data-sticker="🐰">🐰</button>
+                <button class="sticker-btn-item" data-sticker="🐻">🐻</button>
+                <button class="sticker-btn-item" data-sticker="🍀">🍀</button>
+                <button class="sticker-btn-item" data-sticker="🕶️">🕶️</button>
+                <button class="sticker-btn-item" data-sticker="👑">👑</button>
+                <button class="sticker-btn-item" data-sticker="🎨">🎨</button>
+                <button class="sticker-btn-item" data-sticker="🌈">🌈</button>
+                <button class="sticker-btn-item" data-sticker="🛸">🛸</button>
+                <button class="sticker-btn-item" data-sticker="🎂">🎂</button>
+                <button class="sticker-btn-item" data-sticker="⚡">⚡</button>
+              </div>
+
+              <div class="stickers-actions">
+                <button class="btn btn-danger btn-sm" id="btn-clear-stickers">
+                  <i data-lucide="trash-2"></i> Bersihkan Semua Stiker
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Hidden HD Canvas for Rendering -->
+    <canvas id="hd-render-canvas" style="display: none;"></canvas>
+
+
+  </div>
+
+  <!-- Preview & Download Modal -->
+  <div class="modal-overlay" id="result-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🎉 Hasil Foto HD Kamu Ready!</h2>
+        <button class="btn-close" id="btn-close-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Rendered Image Container -->
+        <div class="rendered-image-container">
+          <img id="result-image" src="" alt="Hasil Foto Photobooth">
+          <div class="hd-badge">
+            <i data-lucide="shield-check"></i> HD RESOLUSI TINGGI (PNG)
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-retake">
+          <i data-lucide="rotate-ccw"></i> Foto Ulang
+        </button>
+        <a class="btn btn-primary btn-download" id="btn-download-image" href="#" download="snap-aesthetic-hd.png">
+          <i data-lucide="download"></i> Unduh Resolusi HD
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio elements for Shutter and Countdown -->
+  <audio id="sound-shutter" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav" preload="auto"></audio>
+  <audio id="sound-countdown" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+  <audio id="sound-tada" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav" preload="auto"></audio>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
