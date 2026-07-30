@@ -27,12 +27,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const videoFeed = document.getElementById('video-feed');
   const videoViewport = document.getElementById('video-viewport');
   const filterOverlay = document.getElementById('filter-overlay');
+  const grainOverlay = document.getElementById('grain-overlay');
   const gridOverlay = document.getElementById('grid-overlay');
   const liveStickersContainer = document.getElementById('live-stickers-container');
   const countdownOverlay = document.getElementById('countdown-overlay');
   const countdownNumber = document.getElementById('countdown-number');
   const flashOverlay = document.getElementById('flash-overlay');
   const captureProgressBar = document.getElementById('capture-progress-bar');
+
+  // Create offscreen grain pattern for high resolution rendering
+  let grainPatternCanvas = null;
+  function initGrainPattern() {
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = 128;
+    pCanvas.height = 128;
+    const pCtx = pCanvas.getContext('2d');
+    const imgData = pCtx.createImageData(128, 128);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const val = Math.floor(Math.random() * 255);
+      data[i] = val;     // R
+      data[i+1] = val;   // G
+      data[i+2] = val;   // B
+      data[i+3] = 32;    // Alpha (grain noise density)
+    }
+    pCtx.putImageData(imgData, 0, 0);
+    grainPatternCanvas = pCanvas;
+  }
+  initGrainPattern();
   
   // Controls
   const btnCapture = document.getElementById('btn-capture');
@@ -84,8 +106,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Filter selection
+  // Filter selection & categories
   const filterCards = document.querySelectorAll('.filter-selection .option-card');
+  const categoryBtns = document.querySelectorAll('.filter-categories .category-btn');
+
+  // Filter category selection
+  categoryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const category = btn.getAttribute('data-category');
+
+      filterCards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        // Always show original/normal filter, otherwise filter by category
+        if (category === 'all' || cardCategory === category || card.getAttribute('data-filter') === 'normal') {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Filter card click selection
   filterCards.forEach(card => {
     card.addEventListener('click', () => {
       filterCards.forEach(c => c.classList.remove('active'));
@@ -339,11 +383,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apply visual CSS filter to preview
   function applyFilterToFeed() {
-    // Remove all previous filters
+    // Remove all previous filters, vignettes and grain
     filterOverlay.className = 'filter-overlay';
+    grainOverlay.className = 'grain-overlay';
+    grainOverlay.style.opacity = '0';
     
     if (state.filter !== 'normal') {
       filterOverlay.classList.add(`filter-${state.filter}-effect`);
+      
+      // If it is a LOMO filter, add vignette class
+      if (state.filter.startsWith('lomo')) {
+        filterOverlay.classList.add('vignette-effect');
+      }
+      
+      // If it is a GRAIN filter, enable grain overlay with custom opacities
+      if (state.filter.startsWith('grain')) {
+        grainOverlay.classList.add('active');
+        // Define different grain opacity weights
+        let opacity = '0.15';
+        if (state.filter === 'grain02') opacity = '0.24'; // Heavy Matte
+        if (state.filter === 'grain03') opacity = '0.3';  // B&W Coarse
+        if (state.filter === 'grain04') opacity = '0.2';
+        if (state.filter === 'grain05') opacity = '0.18';
+        if (state.filter === 'grain06') opacity = '0.1';  // Cinematic Soft
+        grainOverlay.style.opacity = opacity;
+      }
     }
   }
 
@@ -1040,8 +1104,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.restore(); // Restore filter state back to normal for texts and stickers
 
+    // Draw Grain on each photo if a grain filter is active
+    if (state.filter.startsWith('grain')) {
+      let opacity = 0.12;
+      if (state.filter === 'grain02') opacity = 0.20;
+      if (state.filter === 'grain03') opacity = 0.25;
+      if (state.filter === 'grain04') opacity = 0.16;
+      if (state.filter === 'grain05') opacity = 0.14;
+      if (state.filter === 'grain06') opacity = 0.08;
+      
+      photoBounds.forEach(bound => {
+        drawGrainOnPhoto(ctx, bound.x, bound.y, bound.w, bound.h, opacity);
+      });
+    }
+
+    // Draw Vignette on each photo if a lomo filter is active
+    if (state.filter.startsWith('lomo')) {
+      photoBounds.forEach(bound => {
+        drawVignetteOnPhoto(ctx, bound.x, bound.y, bound.w, bound.h);
+      });
+    }
+
     // 5. Draw Stickers onto the Canvas relative to the photo containers
     drawStickersOnCanvas(ctx, photoBounds);
+  }
+
+  // Draw Grain pattern inside a specific photo boundary on high-res canvas
+  function drawGrainOnPhoto(ctx, x, y, width, height, opacity) {
+    if (!grainPatternCanvas) return;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.globalCompositeOperation = 'overlay';
+    const pattern = ctx.createPattern(grainPatternCanvas, 'repeat');
+    ctx.fillStyle = pattern;
+    ctx.translate(x, y); // Start tiling relative to photo coordinate
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  // Draw radial vignette inside a specific photo boundary on high-res canvas
+  function drawVignetteOnPhoto(ctx, x, y, width, height) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    const rStart = Math.min(width, height) * 0.45;
+    const rEnd = Math.max(width, height) * 0.85;
+    
+    const grad = ctx.createRadialGradient(cx, cy, rStart, cx, cy, rEnd);
+    grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.75)');
+    
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, width, height);
+    ctx.restore();
   }
 
   // Draw the image mirrored (users expect camera snaps to be mirrored like looking at a mirror)
@@ -1066,28 +1182,54 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply filter to Canvas rendering using context filter property
   function getCanvasFilterString() {
     switch (state.filter) {
-      case 'vintage-warm':
-        return 'sepia(0.25) contrast(1.1) brightness(1.05) saturate(1.15)';
-      case 'fresh-blush':
-        return 'contrast(1.05) brightness(1.08) saturate(1.25) hue-rotate(-12deg)';
-      case 'cyber-neon':
-        return 'contrast(1.25) hue-rotate(130deg) saturate(1.4) brightness(0.95)';
-      case 'mono-classic':
-        return 'grayscale(1) contrast(1.3) brightness(0.95)';
-      case 'dreamy-pastel':
-        return 'brightness(1.12) contrast(0.9) saturate(0.85) sepia(0.05)';
-      case 'tokyo-film':
-        return 'contrast(1.08) brightness(1.02) saturate(0.9) sepia(0.12) hue-rotate(10deg)';
-      case 'chroma-90s':
-        return 'contrast(1.15) saturate(1.4) sepia(0.15) brightness(1.02)';
-      case 'lomo-purple':
-        return 'contrast(1.12) saturate(1.2) hue-rotate(-45deg) sepia(0.1)';
-      case 'sunset-glow':
-        return 'sepia(0.35) saturate(1.3) contrast(1.05) hue-rotate(-20deg) brightness(1.05)';
-      case 'neo-noir':
-        return 'grayscale(1) contrast(1.4) brightness(0.9)';
-      case 'vibrant-peach':
-        return 'contrast(1.05) saturate(1.3) brightness(1.08) sepia(0.12) hue-rotate(-15deg)';
+      // CCD
+      case 'ccd01': return 'saturate(1.2) hue-rotate(5deg) contrast(1.1) brightness(1.02)';
+      case 'ccd02': return 'saturate(1.15) sepia(0.18) contrast(1.08) brightness(1.03)';
+      case 'ccd03': return 'brightness(1.15) contrast(0.95) saturate(1.05)';
+      case 'ccd04': return 'contrast(0.85) saturate(0.85) brightness(1.08) sepia(0.08)';
+      case 'ccd05': return 'contrast(1.15) saturate(1.1) hue-rotate(25deg) brightness(0.98)';
+      case 'ccd06': return 'saturate(1.25) hue-rotate(-15deg) brightness(1.04) contrast(1.05)';
+      case 'ccd07': return 'contrast(1.3) saturate(1.35) brightness(1.0)';
+      
+      // 90s
+      case '90s01': return 'sepia(0.12) hue-rotate(8deg) contrast(1.08) saturate(0.95)';
+      case '90s02': return 'sepia(0.4) contrast(1.1) brightness(0.98) saturate(0.85)';
+      case '90s03': return 'sepia(0.2) contrast(0.9) brightness(1.05) saturate(0.8)';
+      case '90s04': return 'sepia(0.1) saturate(0.8) hue-rotate(15deg) brightness(1.02) contrast(1.05)';
+      case '90s05': return 'contrast(1.2) hue-rotate(110deg) saturate(1.3) brightness(0.95)';
+      case '90s06': return 'sepia(0.25) saturate(1.2) contrast(1.1) brightness(1.02)';
+      case '90s07': return 'opacity(0.9) contrast(0.8) brightness(1.1) saturate(0.7) sepia(0.1)';
+      
+      // HDR
+      case 'hdr01': return 'contrast(1.25) saturate(1.2) brightness(1.05)';
+      case 'hdr02': return 'contrast(1.4) saturate(1.15) brightness(0.95)';
+      case 'hdr03': return 'sepia(0.3) saturate(1.4) contrast(1.15) brightness(1.05)';
+      case 'hdr04': return 'contrast(1.35) saturate(1.5) hue-rotate(140deg)';
+      case 'hdr05': return 'contrast(1.2) saturate(0.95) hue-rotate(-10deg) brightness(1.05)';
+      case 'hdr06': return 'contrast(0.9) brightness(1.1) saturate(1.3)';
+      case 'hdr07': return 'contrast(1.45) saturate(1.25) brightness(1.0)';
+      
+      // GRAIN
+      case 'grain01': return 'contrast(1.05) brightness(1.0)';
+      case 'grain02': return 'contrast(0.85) brightness(1.08) saturate(0.9) sepia(0.1)';
+      case 'grain03': return 'grayscale(1) contrast(1.4) brightness(0.95)';
+      case 'grain04': return 'sepia(0.25) contrast(1.1) saturate(1.15)';
+      case 'grain05': return 'hue-rotate(10deg) sepia(0.1) saturate(0.9) contrast(1.05)';
+      case 'grain06': return 'contrast(1.0) brightness(1.02) saturate(0.95) sepia(0.05)';
+      
+      // LOMO
+      case 'lomo01': return 'contrast(1.3) saturate(1.4) brightness(0.98)';
+      case 'lomo02': return 'contrast(1.2) saturate(1.3) hue-rotate(-15deg)';
+      case 'lomo03': return 'sepia(0.2) saturate(1.15) brightness(1.05) contrast(1.05)';
+      case 'lomo04': return 'saturate(1.25) contrast(1.1) brightness(1.02) sepia(0.12)';
+      case 'lomo05': return 'contrast(1.25) saturate(1.2) hue-rotate(-50deg)';
+      
+      // COLOR
+      case 'c01': return 'sepia(0.5) hue-rotate(-50deg) saturate(2.5) contrast(1.2)';
+      case 'c02': return 'sepia(0.5) hue-rotate(170deg) saturate(2.2) contrast(1.1) brightness(0.95)';
+      case 'c03': return 'sepia(0.5) hue-rotate(75deg) saturate(2.0) contrast(1.15)';
+      case 'c04': return 'sepia(0.4) hue-rotate(30deg) saturate(2.0) contrast(1.1) brightness(1.05)';
+      
       default:
         return 'none';
     }

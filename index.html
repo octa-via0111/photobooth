@@ -39,7 +39,8 @@
             <!-- Live filter preview overlay -->
             <div class="filter-overlay" id="filter-overlay"></div>
             
-
+            <!-- Live grain overlay -->
+            <div class="grain-overlay" id="grain-overlay"></div>
 
             <!-- Sticker overlays for preview (live camera decorations) -->
             <div class="preview-stickers-container" id="live-stickers-container"></div>
@@ -160,9 +161,21 @@
             <!-- 2. Filter Tab -->
             <div class="tab-pane" id="filter-tab">
               <h3>Pilih Filter Lucu & Aesthetic</h3>
+              
+              <!-- Filter Category Selector -->
+              <div class="filter-categories">
+                <button class="category-btn active" data-category="all">Semua</button>
+                <button class="category-btn" data-category="ccd">CCD</button>
+                <button class="category-btn" data-category="90s">90s</button>
+                <button class="category-btn" data-category="hdr">HDR</button>
+                <button class="category-btn" data-category="grain">Grain</button>
+                <button class="category-btn" data-category="lomo">Lomo</button>
+                <button class="category-btn" data-category="color">Color</button>
+              </div>
+
               <div class="selection-grid filter-selection">
                 
-                <div class="option-card active" data-filter="normal">
+                <div class="option-card active" data-filter="normal" data-category="all">
                   <div class="filter-demo filter-normal"></div>
                   <div class="option-details">
                     <h4>Original</h4>
@@ -170,91 +183,267 @@
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="vintage-warm">
-                  <div class="filter-demo filter-vintage-warm"></div>
+                <!-- CCD Filters -->
+                <div class="option-card" data-filter="ccd01" data-category="ccd">
+                  <div class="filter-demo filter-ccd01"></div>
                   <div class="option-details">
-                    <h4>Retro Grain</h4>
-                    <p>Hangat, vintage, nostalgia</p>
+                    <h4>CCD01</h4>
+                    <p>Cool Tone Y2K Digicam</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd02" data-category="ccd">
+                  <div class="filter-demo filter-ccd02"></div>
+                  <div class="option-details">
+                    <h4>CCD02</h4>
+                    <p>Warm Retro Digicam</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd03" data-category="ccd">
+                  <div class="filter-demo filter-ccd03"></div>
+                  <div class="option-details">
+                    <h4>CCD03</h4>
+                    <p>Bright exposure & glow</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd04" data-category="ccd">
+                  <div class="filter-demo filter-ccd04"></div>
+                  <div class="option-details">
+                    <h4>CCD04</h4>
+                    <p>Pastel faded contrast</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd05" data-category="ccd">
+                  <div class="filter-demo filter-ccd05"></div>
+                  <div class="option-details">
+                    <h4>CCD05</h4>
+                    <p>Retro Cyber Cool Green</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd06" data-category="ccd">
+                  <div class="filter-demo filter-ccd06"></div>
+                  <div class="option-details">
+                    <h4>CCD06</h4>
+                    <p>Japanese Pinkish Tone</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="ccd07" data-category="ccd">
+                  <div class="filter-demo filter-ccd07"></div>
+                  <div class="option-details">
+                    <h4>CCD07</h4>
+                    <p>Y2K High Contrast Pop</p>
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="fresh-blush">
-                  <div class="filter-demo filter-fresh-blush"></div>
+                <!-- 90s Filters -->
+                <div class="option-card" data-filter="90s01" data-category="90s">
+                  <div class="filter-demo filter-90s01"></div>
                   <div class="option-details">
-                    <h4>Fresh Blush</h4>
-                    <p>Rona cerah, merona kemerahan</p>
+                    <h4>90S01</h4>
+                    <p>Classic Film Fuji Tone</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s02" data-category="90s">
+                  <div class="filter-demo filter-90s02"></div>
+                  <div class="option-details">
+                    <h4>90S02</h4>
+                    <p>Nostalgia Sepia Warmth</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s03" data-category="90s">
+                  <div class="filter-demo filter-90s03"></div>
+                  <div class="option-details">
+                    <h4>90S03</h4>
+                    <p>Retro Polaroid 95</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s04" data-category="90s">
+                  <div class="filter-demo filter-90s04"></div>
+                  <div class="option-details">
+                    <h4>90S04</h4>
+                    <p>Cold Vintage Cyan Shadows</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s05" data-category="90s">
+                  <div class="filter-demo filter-90s05"></div>
+                  <div class="option-details">
+                    <h4>90S05</h4>
+                    <p>VHS Glitch hue shifts</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s06" data-category="90s">
+                  <div class="filter-demo filter-90s06"></div>
+                  <div class="option-details">
+                    <h4>90S06</h4>
+                    <p>Kodak Gold Warm Film</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="90s07" data-category="90s">
+                  <div class="filter-demo filter-90s07"></div>
+                  <div class="option-details">
+                    <h4>90S07</h4>
+                    <p>Faded washed out retro</p>
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="cyber-neon">
-                  <div class="filter-demo filter-cyber-neon"></div>
+                <!-- HDR Filters -->
+                <div class="option-card" data-filter="hdr01" data-category="hdr">
+                  <div class="filter-demo filter-hdr01"></div>
                   <div class="option-details">
-                    <h4>Cyberpunk Neon</h4>
-                    <p>Nuansa futuristik neon biru-pink</p>
+                    <h4>HDR01</h4>
+                    <p>Standard High Dynamic Range</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr02" data-category="hdr">
+                  <div class="filter-demo filter-hdr02"></div>
+                  <div class="option-details">
+                    <h4>HDR02</h4>
+                    <p>Dramatic Deep Shadows</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr03" data-category="hdr">
+                  <div class="filter-demo filter-hdr03"></div>
+                  <div class="option-details">
+                    <h4>HDR03</h4>
+                    <p>Golden Hour HDR</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr04" data-category="hdr">
+                  <div class="filter-demo filter-hdr04"></div>
+                  <div class="option-details">
+                    <h4>HDR04</h4>
+                    <p>Cyberpunk Neon Contrast</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr05" data-category="hdr">
+                  <div class="filter-demo filter-hdr05"></div>
+                  <div class="option-details">
+                    <h4>HDR05</h4>
+                    <p>Cold Crisp Highlights</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr06" data-category="hdr">
+                  <div class="filter-demo filter-hdr06"></div>
+                  <div class="option-details">
+                    <h4>HDR06</h4>
+                    <p>Soft Dynamic Pastel HDR</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="hdr07" data-category="hdr">
+                  <div class="filter-demo filter-hdr07"></div>
+                  <div class="option-details">
+                    <h4>HDR07</h4>
+                    <p>Intense details & sharp contrast</p>
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="mono-classic">
-                  <div class="filter-demo filter-mono-classic"></div>
+                <!-- GRAIN Filters -->
+                <div class="option-card" data-filter="grain01" data-category="grain">
+                  <div class="filter-demo filter-grain01"></div>
                   <div class="option-details">
-                    <h4>Classic B&W</h4>
-                    <p>Hitam & putih dramatis</p>
+                    <h4>GRAIN01</h4>
+                    <p>Classic Fine Grain</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="grain02" data-category="grain">
+                  <div class="filter-demo filter-grain02"></div>
+                  <div class="option-details">
+                    <h4>GRAIN02</h4>
+                    <p>Heavy Matte Film</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="grain03" data-category="grain">
+                  <div class="filter-demo filter-grain03"></div>
+                  <div class="option-details">
+                    <h4>GRAIN03</h4>
+                    <p>Black & White Coarse Grain</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="grain04" data-category="grain">
+                  <div class="filter-demo filter-grain04"></div>
+                  <div class="option-details">
+                    <h4>GRAIN04</h4>
+                    <p>Warm Retro Grain</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="grain05" data-category="grain">
+                  <div class="filter-demo filter-grain05"></div>
+                  <div class="option-details">
+                    <h4>GRAIN05</h4>
+                    <p>Cool Film Grain</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="grain06" data-category="grain">
+                  <div class="filter-demo filter-grain06"></div>
+                  <div class="option-details">
+                    <h4>GRAIN06</h4>
+                    <p>Cinematic Soft Noise</p>
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="dreamy-pastel">
-                  <div class="filter-demo filter-dreamy-pastel"></div>
+                <!-- LOMO Filters -->
+                <div class="option-card" data-filter="lomo01" data-category="lomo">
+                  <div class="filter-demo filter-lomo01"></div>
                   <div class="option-details">
-                    <h4>Soft Dreamy</h4>
-                    <p>Lembut, pastel, berkabut indah</p>
+                    <h4>LOMO01</h4>
+                    <p>Classic Lomography Vignette</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="lomo02" data-category="lomo">
+                  <div class="filter-demo filter-lomo02"></div>
+                  <div class="option-details">
+                    <h4>LOMO02</h4>
+                    <p>Teal & Orange Lomo</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="lomo03" data-category="lomo">
+                  <div class="filter-demo filter-lomo03"></div>
+                  <div class="option-details">
+                    <h4>LOMO03</h4>
+                    <p>Sweet Warm Vignette</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="lomo04" data-category="lomo">
+                  <div class="filter-demo filter-lomo04"></div>
+                  <div class="option-details">
+                    <h4>LOMO04</h4>
+                    <p>Red Light Leak Vignette</p>
+                  </div>
+                </div>
+                <div class="option-card" data-filter="lomo05" data-category="lomo">
+                  <div class="filter-demo filter-lomo05"></div>
+                  <div class="option-details">
+                    <h4>LOMO05</h4>
+                    <p>Retro Purple Vignette</p>
                   </div>
                 </div>
 
-                <div class="option-card" data-filter="tokyo-film">
-                  <div class="filter-demo filter-tokyo-film"></div>
+                <!-- COLOR Filters -->
+                <div class="option-card" data-filter="c01" data-category="color">
+                  <div class="filter-demo filter-c01"></div>
                   <div class="option-details">
-                    <h4>Tokyo Film</h4>
-                    <p>Cool tones, retro fuji film look</p>
+                    <h4>C01</h4>
+                    <p>Ruby Red pop tint</p>
                   </div>
                 </div>
-
-                <div class="option-card" data-filter="chroma-90s">
-                  <div class="filter-demo filter-chroma-90s"></div>
+                <div class="option-card" data-filter="c02" data-category="color">
+                  <div class="filter-demo filter-c02"></div>
                   <div class="option-details">
-                    <h4>Chroma 90s</h4>
-                    <p>Saturasi tinggi, retro hangat 90an</p>
+                    <h4>C02</h4>
+                    <p>Cobalt Blue cool tint</p>
                   </div>
                 </div>
-
-                <div class="option-card" data-filter="lomo-purple">
-                  <div class="filter-demo filter-lomo-purple"></div>
+                <div class="option-card" data-filter="c03" data-category="color">
+                  <div class="filter-demo filter-c03"></div>
                   <div class="option-details">
-                    <h4>Lomo Purple</h4>
-                    <p>Tone pink keunguan lomo mistis</p>
+                    <h4>C03</h4>
+                    <p>Emerald Green tint</p>
                   </div>
                 </div>
-
-                <div class="option-card" data-filter="sunset-glow">
-                  <div class="filter-demo filter-sunset-glow"></div>
+                <div class="option-card" data-filter="c04" data-category="color">
+                  <div class="filter-demo filter-c04"></div>
                   <div class="option-details">
-                    <h4>Sunset Glow</h4>
-                    <p>Efek keemasan golden hour hangat</p>
-                  </div>
-                </div>
-
-                <div class="option-card" data-filter="neo-noir">
-                  <div class="filter-demo filter-neo-noir"></div>
-                  <div class="option-details">
-                    <h4>Neo Noir</h4>
-                    <p>Monokrom kontras tinggi & dramatis</p>
-                  </div>
-                </div>
-
-                <div class="option-card" data-filter="vibrant-peach">
-                  <div class="filter-demo filter-vibrant-peach"></div>
-                  <div class="option-details">
-                    <h4>Vibrant Peach</h4>
-                    <p>Rona peach hangat yang viral</p>
+                    <h4>C04</h4>
+                    <p>Lemon Yellow sunny tint</p>
                   </div>
                 </div>
 
