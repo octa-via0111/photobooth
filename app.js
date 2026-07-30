@@ -400,10 +400,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateViewportAspectRatio() {
     videoInnerWrap.style.transition = 'aspect-ratio 0.4s ease';
     
-    if (state.layout === 'polaroid-single') {
+    if (state.layout === 'strip-4') {
+      videoInnerWrap.style.aspectRatio = '1 / 3.2';
+    } else if (state.layout === 'strip-3') {
+      videoInnerWrap.style.aspectRatio = '1 / 2.4';
+    } else if (state.layout === 'strip-2') {
+      videoInnerWrap.style.aspectRatio = '1 / 1.7';
+    } else if (state.layout === 'grid-2x2') {
+      videoInnerWrap.style.aspectRatio = '1 / 1.1';
+    } else if (state.layout === 'grid-3x2') {
+      videoInnerWrap.style.aspectRatio = '1 / 1.55';
+    } else if (state.layout === 'wide-double') {
+      videoInnerWrap.style.aspectRatio = '1.8 / 1';
+    } else if (state.layout === 'polaroid-single') {
       videoInnerWrap.style.aspectRatio = '1 / 1';
+    } else if (state.layout === 'landscape-single') {
+      videoInnerWrap.style.aspectRatio = '4 / 3';
     } else {
-      // All other layout grids fit inside a standard 4:3 preview area
       videoInnerWrap.style.aspectRatio = '4 / 3';
     }
   }
