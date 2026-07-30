@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- DOM ELEMENTS ---
   const videoFeed = document.getElementById('video-feed');
   const videoViewport = document.getElementById('video-viewport');
+  const videoInnerWrap = videoViewport.querySelector('.video-inner-wrap');
   const filterOverlay = document.getElementById('filter-overlay');
   const grainOverlay = document.getElementById('grain-overlay');
   const gridOverlay = document.getElementById('grid-overlay');
@@ -148,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
       colorBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.frameColor = btn.getAttribute('data-color');
+      updateLiveFramePreview();
     });
   });
 
@@ -158,16 +160,19 @@ document.addEventListener('DOMContentLoaded', () => {
       patternCards.forEach(c => c.classList.remove('active'));
       card.classList.add('active');
       state.framePattern = card.getAttribute('data-pattern');
+      updateLiveFramePreview();
     });
   });
 
   // Frame text input & date
   frameCustomText.addEventListener('input', (e) => {
     state.customText = e.target.value;
+    updateLiveFrameTexts();
   });
 
   showDateCheckbox.addEventListener('change', (e) => {
     state.showDate = e.target.checked;
+    updateLiveFrameTexts();
   });
 
   // Stickers selection click
@@ -273,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mockCanvas.style.height = '100%';
     mockCanvas.style.objectFit = 'cover';
     mockCanvas.style.transform = 'scaleX(-1)';
-    videoViewport.insertBefore(mockCanvas, videoFeed);
+    videoInnerWrap.insertBefore(mockCanvas, videoFeed);
 
     const ctx = mockCanvas.getContext('2d');
     
@@ -365,19 +370,69 @@ document.addEventListener('DOMContentLoaded', () => {
     state.mockCameraIntervalId = setInterval(drawMockFrame, 1000 / 30); // 30 FPS
   }
 
-  // Set view aspect ratio based on active layout
+  // Set view aspect ratio based on active layout (now applied on videoInnerWrap)
   function updateViewportAspectRatio() {
-    videoViewport.style.transition = 'aspect-ratio 0.4s ease';
+    videoInnerWrap.style.transition = 'aspect-ratio 0.4s ease';
     
     if (state.layout === 'strip-4' || state.layout === 'strip-3') {
-      // 4-Cut & 3-Cut Strip style is long vertical, but camera preview is standard 4:3.
-      videoViewport.style.aspectRatio = '4 / 3';
+      videoInnerWrap.style.aspectRatio = '4 / 3';
     } else if (state.layout === 'grid-2x2') {
-      videoViewport.style.aspectRatio = '4 / 3';
+      videoInnerWrap.style.aspectRatio = '4 / 3';
     } else if (state.layout === 'polaroid-single') {
-      videoViewport.style.aspectRatio = '1 / 1';
+      videoInnerWrap.style.aspectRatio = '1 / 1';
     } else if (state.layout === 'landscape-single') {
-      videoViewport.style.aspectRatio = '4 / 3';
+      videoInnerWrap.style.aspectRatio = '4 / 3';
+    }
+  }
+
+  // Update Live Frame background, patterns, and spacing
+  function updateLiveFramePreview() {
+    // Reset background styles and preview classes
+    videoViewport.style.background = '';
+    videoViewport.style.backgroundColor = '';
+    videoViewport.className = 'video-container';
+    
+    // Check if frame pattern is selected
+    if (state.framePattern !== 'clean') {
+      videoViewport.classList.add(`pattern-${state.framePattern}-preview`);
+    } else {
+      // White/Color frame layout
+      if (state.frameColor === 'gradient-neon') {
+        videoViewport.style.background = 'linear-gradient(135deg, #ff007f, #7f00ff, #06b6d4)';
+      } else {
+        videoViewport.style.backgroundColor = state.frameColor;
+      }
+    }
+    
+    // Always apply has-frame layout
+    videoViewport.classList.add('has-frame');
+    
+    // Set text class coloring based on dark or light backgrounds
+    const isDarkFrame = (state.frameColor === '#111111' || state.frameColor === 'gradient-neon' || state.framePattern === 'film-strip' || state.framePattern === 'cyber-grid');
+    if (isDarkFrame) {
+      videoViewport.classList.add('dark-frame');
+    } else {
+      videoViewport.classList.remove('dark-frame');
+    }
+  }
+
+  // Update Live Frame texts (polaroid custom writing)
+  function updateLiveFrameTexts() {
+    const liveTextEl = document.getElementById('live-frame-text');
+    const liveDateEl = document.getElementById('live-frame-date');
+    
+    if (state.customText.trim() !== '') {
+      liveTextEl.textContent = state.customText.toUpperCase();
+    } else {
+      liveTextEl.textContent = 'SnapAesthetic ✨';
+    }
+    
+    if (state.showDate) {
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      liveDateEl.textContent = new Date().toLocaleDateString('id-ID', options);
+      liveDateEl.style.display = 'block';
+    } else {
+      liveDateEl.style.display = 'none';
     }
   }
 
@@ -420,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stickerEl.id = stickerId;
     
     // Center of viewport initially
-    const rect = videoViewport.getBoundingClientRect();
+    const rect = videoInnerWrap.getBoundingClientRect();
     const initX = (rect.width / 2) - 30;
     const initY = (rect.height / 2) - 30;
 
@@ -503,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function performMove(newX, newY) {
-      const containerRect = videoViewport.getBoundingClientRect();
+      const containerRect = videoInnerWrap.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
 
       // Constraint inside container
@@ -1239,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function drawStickersOnCanvas(ctx, photoBounds) {
     if (state.stickers.length === 0) return;
 
-    const viewportRect = videoViewport.getBoundingClientRect();
+    const viewportRect = videoInnerWrap.getBoundingClientRect();
     const vw = viewportRect.width;
     const vh = viewportRect.height;
 
@@ -1330,4 +1385,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initCamera();
   updateViewportAspectRatio();
   applyFilterToFeed();
+  updateLiveFramePreview();
+  updateLiveFrameTexts();
 });
