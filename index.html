@@ -35,23 +35,16 @@
           <!-- Live Video Viewport Container -->
           <div class="video-container" id="video-viewport">
             <div class="video-inner-wrap">
-              <video id="video-feed" autoplay playsinline muted></video>
+              <!-- Grid for dynamic layout slots -->
+              <div class="live-layout-grid" id="live-layout-grid"></div>
               
-              <!-- Live filter preview overlay -->
+              <!-- Elements that are moved into the active slot dynamically by JS -->
+              <video id="video-feed" autoplay playsinline muted style="display: none;"></video>
               <div class="filter-overlay" id="filter-overlay"></div>
-              
-              <!-- Live grain overlay -->
               <div class="grain-overlay" id="grain-overlay"></div>
-
-              <!-- Sticker overlays for preview (live camera decorations) -->
-              <div class="preview-stickers-container" id="live-stickers-container"></div>
-              
-              <!-- Countdown Overlay -->
               <div class="countdown-overlay" id="countdown-overlay">
                 <span id="countdown-number">3</span>
               </div>
-
-              <!-- Camera Flash Screen Flash -->
               <div class="flash-overlay" id="flash-overlay"></div>
 
               <!-- Sequential Capture Progress Indicator -->
@@ -62,6 +55,9 @@
                 <div class="progress-step" data-step="4"></div>
               </div>
             </div>
+
+            <!-- Sticker overlays for preview (live camera decorations - spans entire viewport container) -->
+            <div class="preview-stickers-container" id="live-stickers-container"></div>
 
             <!-- Live Frame Text Overlay (for polaroid border text) -->
             <div class="live-frame-text-container" id="live-frame-text-container">
@@ -133,6 +129,17 @@
                   </div>
                 </div>
 
+                <div class="option-card" data-layout="strip-2">
+                  <div class="layout-preview strip-2-preview" style="display: flex; flex-direction: column; width: 55px; height: 55px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; gap: 3px;">
+                    <span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span>
+                    <span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>2-Cut Strip</h4>
+                    <p>2 foto vertikal minimalis</p>
+                  </div>
+                </div>
+
                 <div class="option-card" data-layout="grid-2x2">
                   <div class="layout-preview grid-2x2-preview">
                     <div><span></span><span></span></div>
@@ -141,6 +148,29 @@
                   <div class="option-details">
                     <h4>4-Cut Grid (2x2)</h4>
                     <p>4 foto kotak kolase</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="grid-3x2">
+                  <div class="layout-preview grid-3x2-preview" style="display: flex; flex-direction: column; width: 55px; height: 55px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; gap: 3px;">
+                    <div style="display: flex; flex: 1; gap: 3px;"><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span></div>
+                    <div style="display: flex; flex: 1; gap: 3px;"><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span></div>
+                    <div style="display: flex; flex: 1; gap: 3px;"><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span><span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span></div>
+                  </div>
+                  <div class="option-details">
+                    <h4>6-Cut Grid (3x2)</h4>
+                    <p>6 foto kolase dinamis</p>
+                  </div>
+                </div>
+
+                <div class="option-card" data-layout="wide-double">
+                  <div class="layout-preview wide-double-preview" style="display: flex; flex-direction: row; width: 55px; height: 55px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; gap: 3px;">
+                    <span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span>
+                    <span style="flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></span>
+                  </div>
+                  <div class="option-details">
+                    <h4>Wide Double</h4>
+                    <p>2 foto sejajar landscape</p>
                   </div>
                 </div>
 
@@ -474,6 +504,14 @@
                   <button class="color-btn" style="background: #fff5cc;" data-color="#fff5cc" title="Lemon Yellow"></button>
                   <button class="color-btn" style="background: #e8dbff;" data-color="#e8dbff" title="Lavender"></button>
                   <button class="color-btn" style="background: linear-gradient(135deg, #ff007f, #7f00ff);" data-color="gradient-neon" title="Neon Gradient"></button>
+                  
+                  <!-- Custom Color Picker -->
+                  <div class="custom-color-picker-wrapper" style="position: relative; display: inline-block;">
+                    <input type="color" id="custom-frame-color" value="#ffffff" style="position: absolute; top: 0; left: 0; width: 32px; height: 32px; opacity: 0; cursor: pointer; border-radius: 50%;">
+                    <button class="color-btn custom-color-btn" id="btn-custom-color" style="background: conic-gradient(red, yellow, green, cyan, blue, magenta, red); display: flex; align-items: center; justify-content: center;" title="Warna Kustom">
+                      <i data-lucide="palette" style="width: 14px; height: 14px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -514,6 +552,38 @@
                     <div class="option-details">
                       <h4>Cyber Tech</h4>
                       <p>Grid futuristik dengan neon line</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="checkered">
+                    <div class="pattern-preview pattern-checkered" style="background-color: #ffffff; background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%); background-size: 10px 10px; background-position: 0 0, 0 5px, 5px -5px, -5px 0px; width: 55px; height: 55px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                    <div class="option-details">
+                      <h4>Retro Checkerboard</h4>
+                      <p>Papan catur hitam-putih estetis</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="gradient-sunset">
+                    <div class="pattern-preview pattern-sunset-grad" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); width: 55px; height: 55px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                    <div class="option-details">
+                      <h4>Pastel Sunset</h4>
+                      <p>Gradasi jingga-merah muda hangat</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="cotton-candy">
+                    <div class="pattern-preview pattern-candy-grad" style="background: linear-gradient(135deg, #ffc0cb 0%, #e0c3fc 50%, #8fd3f4 100%); width: 55px; height: 55px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                    <div class="option-details">
+                      <h4>Cotton Candy</h4>
+                      <p>Gradasi manis warna permen kapas</p>
+                    </div>
+                  </div>
+
+                  <div class="option-card" data-pattern="retro-floral">
+                    <div class="pattern-preview pattern-floral" style="background-color: #fff9db; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff922b' fill-opacity='0.4' d='M12 2a2 2 0 0 1 2 2c0 .48-.17.91-.45 1.25.4.1.75.31 1 .6a2 2 0 1 1 2.9 2.9c-.3.25-.5.6-.6 1 .34.28.55.71.55 1.2a2 2 0 1 1-4 0c0-.49.2-.92.55-1.2-.1-.4-.3-.75-.6-1a2 2 0 1 1 2.9-2.9c.25.3.6.5 1 .6a2 2 0 0 1-.45-1.25A2 2 0 0 1 12 2z'/%3E%3C/svg%3E&quot;); width: 55px; height: 55px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                    <div class="option-details">
+                      <h4>Retro Daisy Floral</h4>
+                      <p>Motif bunga daisy retro 70-an</p>
                     </div>
                   </div>
 

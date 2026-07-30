@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Update viewport aspect ratio based on layout preview helper
       updateViewportAspectRatio();
+      // Render layout slots immediately
+      renderLiveLayoutSlots();
     });
   });
 
@@ -144,17 +146,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Frame Color selection
   const colorBtns = document.querySelectorAll('.color-options .color-btn');
+  const customFrameColorInput = document.getElementById('custom-frame-color');
+  const btnCustomColor = document.getElementById('btn-custom-color');
+  const patternCards = document.querySelectorAll('.pattern-selection .option-card');
+
   colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.id === 'btn-custom-color') return; // Handled by color input
+
       colorBtns.forEach(b => b.classList.remove('active'));
+      if (btnCustomColor) btnCustomColor.classList.remove('active');
       btn.classList.add('active');
       state.frameColor = btn.getAttribute('data-color');
       updateLiveFramePreview();
     });
   });
 
+  // Custom Color Input Listener
+  if (customFrameColorInput) {
+    customFrameColorInput.addEventListener('input', (e) => {
+      state.frameColor = e.target.value;
+      state.framePattern = 'clean'; // Reset pattern when picking custom color
+      
+      colorBtns.forEach(b => b.classList.remove('active'));
+      patternCards.forEach(c => c.classList.remove('active'));
+      
+      if (btnCustomColor) {
+        btnCustomColor.style.background = e.target.value;
+        btnCustomColor.classList.add('active');
+      }
+      
+      updateLiveFramePreview();
+    });
+  }
+
   // Frame Pattern selection
-  const patternCards = document.querySelectorAll('.pattern-selection .option-card');
   patternCards.forEach(card => {
     card.addEventListener('click', () => {
       patternCards.forEach(c => c.classList.remove('active'));
@@ -374,13 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateViewportAspectRatio() {
     videoInnerWrap.style.transition = 'aspect-ratio 0.4s ease';
     
-    if (state.layout === 'strip-4' || state.layout === 'strip-3') {
-      videoInnerWrap.style.aspectRatio = '4 / 3';
-    } else if (state.layout === 'grid-2x2') {
-      videoInnerWrap.style.aspectRatio = '4 / 3';
-    } else if (state.layout === 'polaroid-single') {
+    if (state.layout === 'polaroid-single') {
       videoInnerWrap.style.aspectRatio = '1 / 1';
-    } else if (state.layout === 'landscape-single') {
+    } else {
+      // All other layout grids fit inside a standard 4:3 preview area
       videoInnerWrap.style.aspectRatio = '4 / 3';
     }
   }
@@ -396,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.framePattern !== 'clean') {
       videoViewport.classList.add(`pattern-${state.framePattern}-preview`);
     } else {
-      // White/Color frame layout
+      // White/Color/Custom frame layout
       if (state.frameColor === 'gradient-neon') {
         videoViewport.style.background = 'linear-gradient(135deg, #ff007f, #7f00ff, #06b6d4)';
       } else {
@@ -424,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.customText.trim() !== '') {
       liveTextEl.textContent = state.customText.toUpperCase();
     } else {
-      liveTextEl.textContent = 'SnapAesthetic ✨';
+      liveTextEl.textContent = 'SNAPAESTHETIC ✨';
     }
     
     if (state.showDate) {
@@ -433,6 +456,70 @@ document.addEventListener('DOMContentLoaded', () => {
       liveDateEl.style.display = 'block';
     } else {
       liveDateEl.style.display = 'none';
+    }
+  }
+
+  // Get total photos needed for layout
+  function getTotalPhotosNeeded() {
+    switch (state.layout) {
+      case 'strip-4': return 4;
+      case 'strip-3': return 3;
+      case 'strip-2': return 2;
+      case 'grid-2x2': return 4;
+      case 'grid-3x2': return 6;
+      case 'wide-double': return 2;
+      case 'polaroid-single':
+      case 'landscape-single':
+      default:
+        return 1;
+    }
+  }
+
+  // Render layout slots inside videoInnerWrap
+  function renderLiveLayoutSlots() {
+    const layoutGrid = document.getElementById('live-layout-grid');
+    if (!layoutGrid) return;
+    
+    layoutGrid.innerHTML = '';
+    layoutGrid.className = `live-layout-grid layout-${state.layout}`;
+    
+    const totalSlots = getTotalPhotosNeeded();
+    
+    for (let i = 0; i < totalSlots; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot';
+      slot.setAttribute('data-slot-index', i);
+      
+      if (i === 0) {
+        slot.classList.add('active-feed');
+        slot.appendChild(videoFeed);
+        
+        const mockCanvas = document.getElementById('mock-camera-canvas');
+        if (mockCanvas) {
+          slot.appendChild(mockCanvas);
+        }
+        
+        slot.appendChild(filterOverlay);
+        slot.appendChild(grainOverlay);
+        
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        if (countdownOverlay) slot.appendChild(countdownOverlay);
+        
+        const flashOverlay = document.getElementById('flash-overlay');
+        if (flashOverlay) slot.appendChild(flashOverlay);
+      } else {
+        slot.innerHTML = `
+          <div class="slot-placeholder">
+            <i data-lucide="camera" class="placeholder-icon"></i>
+            <span>Slot ${i + 1}</span>
+          </div>
+        `;
+      }
+      layoutGrid.appendChild(slot);
+    }
+    
+    if (window.lucide) {
+      window.lucide.createIcons();
     }
   }
 
@@ -475,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stickerEl.id = stickerId;
     
     // Center of viewport initially
-    const rect = videoInnerWrap.getBoundingClientRect();
+    const rect = videoViewport.getBoundingClientRect();
     const initX = (rect.width / 2) - 30;
     const initY = (rect.height / 2) - 30;
 
@@ -558,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function performMove(newX, newY) {
-      const containerRect = videoInnerWrap.getBoundingClientRect();
+      const containerRect = videoViewport.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
 
       // Constraint inside container
@@ -594,19 +681,28 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSwitchCamera.disabled = true;
     
     // Determine number of photos based on layout
-    const totalPhotosNeeded = (state.layout === 'strip-4' || state.layout === 'grid-2x2') ? 4 : (state.layout === 'strip-3' ? 3 : 1);
+    const totalPhotosNeeded = getTotalPhotosNeeded();
 
-    // Reset progress step classes
-    const steps = captureProgressBar.querySelectorAll('.progress-step');
-    steps.forEach(step => step.className = 'progress-step');
+    // Reset progress step classes and build steps
+    captureProgressBar.innerHTML = '';
+    for (let i = 0; i < totalPhotosNeeded; i++) {
+      const step = document.createElement('div');
+      step.className = 'progress-step';
+      step.setAttribute('data-step', i + 1);
+      captureProgressBar.appendChild(step);
+    }
     
+    const steps = captureProgressBar.querySelectorAll('.progress-step');
     if (totalPhotosNeeded > 1) {
       captureProgressBar.classList.add('active');
     }
 
+    // Reset layout slots
+    renderLiveLayoutSlots();
+
     for (let i = 0; i < totalPhotosNeeded; i++) {
       // Focus current step progress bar
-      if (totalPhotosNeeded > 1) {
+      if (totalPhotosNeeded > 1 && i < steps.length) {
         steps[i].className = 'progress-step done';
       }
 
@@ -620,6 +716,38 @@ document.addEventListener('DOMContentLoaded', () => {
       // Capture frame
       const frameData = captureFrame();
       state.capturedPhotos.push(frameData);
+
+      // Render the captured photo in slot i
+      const activeSlot = videoViewport.querySelector(`.photo-slot[data-slot-index="${i}"]`);
+      if (activeSlot) {
+        activeSlot.classList.remove('active-feed');
+        activeSlot.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = frameData;
+        activeSlot.appendChild(img);
+      }
+
+      // Move feed to slot i+1 if there is a next slot
+      if (i + 1 < totalPhotosNeeded) {
+        const nextSlot = videoViewport.querySelector(`.photo-slot[data-slot-index="${i + 1}"]`);
+        if (nextSlot) {
+          nextSlot.innerHTML = '';
+          nextSlot.classList.add('active-feed');
+          nextSlot.appendChild(videoFeed);
+          const mockCanvas = document.getElementById('mock-camera-canvas');
+          if (mockCanvas) {
+            nextSlot.appendChild(mockCanvas);
+          }
+          nextSlot.appendChild(filterOverlay);
+          nextSlot.appendChild(grainOverlay);
+          
+          const countdownOverlay = document.getElementById('countdown-overlay');
+          if (countdownOverlay) nextSlot.appendChild(countdownOverlay);
+          
+          const flashOverlay = document.getElementById('flash-overlay');
+          if (flashOverlay) nextSlot.appendChild(flashOverlay);
+        }
+      }
 
       // Wait brief moment before next shot (for visual pacing)
       await sleep(800);
@@ -744,9 +872,18 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (state.layout === 'strip-3') {
         canvasWidth = 1200;
         canvasHeight = 2900;
+      } else if (state.layout === 'strip-2') {
+        canvasWidth = 1200;
+        canvasHeight = 2000;
       } else if (state.layout === 'grid-2x2') {
         canvasWidth = 2000;
         canvasHeight = 2200;
+      } else if (state.layout === 'grid-3x2') {
+        canvasWidth = 2000;
+        canvasHeight = 3100;
+      } else if (state.layout === 'wide-double') {
+        canvasWidth = 2200;
+        canvasHeight = 1200;
       } else if (state.layout === 'polaroid-single') {
         canvasWidth = 1600;
         canvasHeight = 2000;
@@ -1019,7 +1156,65 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.font = 'bold 14px "Outfit"';
       ctx.fillText('WARNING: Cuteness overload! 🌸', winX + 12, winY + 54);
     }
+    else if (state.framePattern === 'checkered') {
+      ctx.fillStyle = '#e2e8f0';
+      const size = 60;
+      for (let y = 0; y < height; y += size * 2) {
+        for (let x = 0; x < width; x += size * 2) {
+          ctx.fillRect(x, y, size, size);
+          ctx.fillRect(x + size, y + size, size, size);
+        }
+      }
+    }
+    else if (state.framePattern === 'gradient-sunset') {
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, '#ff9a9e');
+      grad.addColorStop(0.5, '#fecfef');
+      grad.addColorStop(1, '#ffc3a0');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+    }
+    else if (state.framePattern === 'cotton-candy') {
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, '#ffc0cb');
+      grad.addColorStop(0.5, '#e0c3fc');
+      grad.addColorStop(1, '#8fd3f4');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+    }
+    else if (state.framePattern === 'retro-floral') {
+      const floralCount = 45;
+      for (let i = 0; i < floralCount; i++) {
+        const x = (Math.abs(Math.sin(i * 99)) * width);
+        const y = (Math.abs(Math.cos(i * 123)) * height);
+        const size = 30 + (Math.abs(Math.sin(i * 44)) * 40);
+        drawFlowerShape(ctx, x, y, size);
+      }
+    }
 
+    ctx.restore();
+  }
+
+  // Draw 5-petal daisy flower shape on canvas
+  function drawFlowerShape(ctx, x, y, size) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Draw 5 petals
+    ctx.fillStyle = '#ff922b';
+    ctx.globalAlpha = 0.25;
+    for (let i = 0; i < 5; i++) {
+      ctx.rotate((Math.PI * 2) / 5);
+      ctx.beginPath();
+      ctx.arc(0, -size / 2, size / 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Draw center
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 4, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -1136,6 +1331,55 @@ document.addEventListener('DOMContentLoaded', () => {
       drawMirroredPhoto(ctx, images[3], borderGap + photoW + gap, startY + photoH + gap, photoW, photoH);
       photoBounds.push({ x: borderGap + photoW + gap, y: startY + photoH + gap, w: photoW, h: photoH });
     } 
+    else if (state.layout === 'strip-2') {
+      // 2 Photos vertically
+      const borderGap = (state.framePattern === 'film-strip' || state.framePattern === 'newspaper') ? 85 : 65;
+      const photoW = W - (borderGap * 2);
+      const photoH = photoW * (3 / 4); // 4:3
+      const middleGap = 45;
+      const startY = (state.framePattern === 'newspaper') ? 160 : 80;
+
+      for (let i = 0; i < 2; i++) {
+        const py = startY + i * (photoH + middleGap);
+        const px = borderGap;
+        
+        drawMirroredPhoto(ctx, images[i], px, py, photoW, photoH);
+        photoBounds.push({ x: px, y: py, w: photoW, h: photoH });
+      }
+    }
+    else if (state.layout === 'grid-3x2') {
+      // 6 Photos: 3 rows, 2 columns grid
+      const borderGap = 65;
+      const gap = 45;
+      const photoW = (W - (borderGap * 2) - gap) / 2;
+      const photoH = photoW * (3 / 4);
+      const startY = (state.framePattern === 'newspaper') ? 165 : 80;
+
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 2; col++) {
+          const idx = row * 2 + col;
+          const px = borderGap + col * (photoW + gap);
+          const py = startY + row * (photoH + gap);
+          
+          drawMirroredPhoto(ctx, images[idx], px, py, photoW, photoH);
+          photoBounds.push({ x: px, y: py, w: photoW, h: photoH });
+        }
+      }
+    }
+    else if (state.layout === 'wide-double') {
+      // 2 horizontal side-by-side
+      const borderGap = 65;
+      const gap = 45;
+      const photoW = (W - (borderGap * 2) - gap) / 2;
+      const photoH = photoW * (3 / 4);
+      const startY = (state.framePattern === 'newspaper') ? 165 : 80;
+
+      drawMirroredPhoto(ctx, images[0], borderGap, startY, photoW, photoH);
+      photoBounds.push({ x: borderGap, y: startY, w: photoW, h: photoH });
+
+      drawMirroredPhoto(ctx, images[1], borderGap + photoW + gap, startY, photoW, photoH);
+      photoBounds.push({ x: borderGap + photoW + gap, y: startY, w: photoW, h: photoH });
+    }
     else if (state.layout === 'polaroid-single') {
       // Square polaroid (1:1 aspect ratio photo)
       const borderGap = 80;
@@ -1180,8 +1424,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 5. Draw Stickers onto the Canvas relative to the photo containers
-    drawStickersOnCanvas(ctx, photoBounds);
+    // 5. Draw Stickers onto the Canvas relative to the entire outer canvas frame
+    drawStickersOnCanvas(ctx, W, H);
   }
 
   // Draw Grain pattern inside a specific photo boundary on high-res canvas
@@ -1290,44 +1534,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Translate stickers from live preview onto target canvas containers
-  function drawStickersOnCanvas(ctx, photoBounds) {
+  // Translate stickers from live preview onto target canvas (drawn once on the entire canvas)
+  function drawStickersOnCanvas(ctx, canvasWidth, canvasHeight) {
     if (state.stickers.length === 0) return;
 
-    const viewportRect = videoInnerWrap.getBoundingClientRect();
+    const viewportRect = videoViewport.getBoundingClientRect();
     const vw = viewportRect.width;
     const vh = viewportRect.height;
 
-    // For single photo modes (Polaroid & Landscape), place stickers on that photo box.
-    // For 4-Cut, we can stamp the stickers on ALL photos, which makes the stickers look extremely cute and repeatable!
-    photoBounds.forEach(bound => {
-      state.stickers.forEach(sticker => {
-        // Calculate relative coordinates in percentage of live video frame size
-        const relX = sticker.x / vw;
-        const relY = sticker.y / vh;
-        
-        // Map to HD canvas photo bounds coordinates
-        const canvasStickerX = bound.x + (relX * bound.w);
-        const canvasStickerY = bound.y + (relY * bound.h);
-        
-        // Scale sticker size relative to photo box size
-        const sizeRatio = sticker.size / vw;
-        const canvasStickerSize = Math.max(30, sizeRatio * bound.w * 1.5); // make it slightly bigger in HD
+    state.stickers.forEach(sticker => {
+      // Calculate relative coordinates in percentage of the outer videoViewport
+      const relX = sticker.x / vw;
+      const relY = sticker.y / vh;
+      
+      // Map directly to HD canvas dimensions
+      const canvasStickerX = relX * canvasWidth;
+      const canvasStickerY = relY * canvasHeight;
+      
+      // Scale sticker size relative to canvas width
+      const sizeRatio = sticker.size / vw;
+      const canvasStickerSize = sizeRatio * canvasWidth;
 
-        ctx.save();
-        ctx.font = `${canvasStickerSize}px Outfit, Arial, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Add subtle shadow for stickers depth
-        ctx.shadowColor = 'rgba(0,0,0,0.15)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 4;
+      ctx.save();
+      ctx.font = `${canvasStickerSize}px Outfit, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Add subtle shadow for stickers depth
+      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 4;
 
-        ctx.fillText(sticker.emoji, canvasStickerX + (canvasStickerSize/2), canvasStickerY + (canvasStickerSize/2));
-        ctx.restore();
-      });
+      ctx.fillText(sticker.emoji, canvasStickerX + (canvasStickerSize/2), canvasStickerY + (canvasStickerSize/2));
+      ctx.restore();
     });
   }
 
@@ -1387,4 +1627,5 @@ document.addEventListener('DOMContentLoaded', () => {
   applyFilterToFeed();
   updateLiveFramePreview();
   updateLiveFrameTexts();
+  renderLiveLayoutSlots();
 });
